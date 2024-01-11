@@ -1,15 +1,11 @@
 package com.gordonplumb.watchlist.models;
 
 public class AuthenticationResponseFactory {
-    public static AuthenticationResponse success(String token) {
-        AuthenticationResponse response = new AuthenticationResponse();
-        response.setToken(token);
-        return response;
+    public static AuthenticationResponse success(long userId, String name, String token) {
+        return new AuthenticationResponse(userId, name, token);
     }
 
     public static AuthenticationResponse failure(String error) {
-        AuthenticationResponse response = new AuthenticationResponse();
-        response.setError(error);
-        return response;
+        return new AuthenticationResponse(error);
     }
 }

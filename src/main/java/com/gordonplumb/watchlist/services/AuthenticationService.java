@@ -32,14 +32,14 @@ public class AuthenticationService {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             return AuthenticationResponseFactory.failure("An account already exists with this email");
         }
-        var user = new User(
+        User user = new User(
             request.getName(),
             request.getEmail(),
             passwordEncoder.encode(request.getPassword())
         );
-        userRepository.save(user);
-        var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponseFactory.success(jwtToken);
+        User savedUser = userRepository.save(user);
+        String jwtToken = jwtService.generateToken(user);
+        return AuthenticationResponseFactory.success(savedUser.getId(), savedUser.getName(), jwtToken);
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -50,8 +50,8 @@ public class AuthenticationService {
             )
         );
 
-        var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-        var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponseFactory.success(jwtToken);
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        String jwtToken = jwtService.generateToken(user);
+        return AuthenticationResponseFactory.success(user.getId(), user.getName(), jwtToken);
     }
 }
