@@ -10,11 +10,22 @@ public class ListItem {
     @ManyToOne
     @JoinColumn(name = "watchlist_id")
     private Watchlist watchlist;
-    private long tmdbId;
+    private long tmdbId; // TODO: needed?
     @Column(nullable = false)
     private String title;
+    private String tags; // csv
     private int runtime;
     private boolean watched;
+
+    public ListItem() {}
+
+    public ListItem(Watchlist watchlist, String title, String tags, int runtime, boolean watched) {
+        this.watchlist = watchlist;
+        this.title = title;
+        this.tags = tags;
+        this.runtime = runtime;
+        this.watched = watched;
+    }
 
     public long getId() {
         return id;
@@ -46,6 +57,14 @@ public class ListItem {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
     }
 
     public int getRuntime() {

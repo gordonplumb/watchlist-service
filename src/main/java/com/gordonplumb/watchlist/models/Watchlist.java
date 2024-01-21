@@ -10,11 +10,18 @@ public class Watchlist {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     @ManyToOne
-    @JoinColumn(name="user_id")
+    @JoinColumn(name="user_id", nullable = false)
     private User user;
     private String name;
     @OneToMany(mappedBy = "watchlist")
     private List<ListItem> listItems;
+
+    public Watchlist() {}
+
+    public Watchlist(User user, String name) {
+        this.user = user;
+        this.name = name;
+    }
 
     public long getId() {
         return id;
@@ -38,5 +45,9 @@ public class Watchlist {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<ListItem> getListItems() {
+        return this.listItems;
     }
 }
