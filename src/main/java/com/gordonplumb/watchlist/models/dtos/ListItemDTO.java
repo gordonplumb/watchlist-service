@@ -4,6 +4,7 @@ import java.util.List;
 
 public class ListItemDTO {
     private long id;
+    private int tmdbId;
     private String title;
     private String[] tags;
     private int runtime;
@@ -64,5 +65,13 @@ public class ListItemDTO {
 
     public void setWatched(boolean watched) {
         this.watched = watched;
+    }
+
+    public int getTmdbId() {
+        return tmdbId;
+    }
+
+    public void setTmdbId(int tmdbId) {
+        this.tmdbId = tmdbId;
     }
 }

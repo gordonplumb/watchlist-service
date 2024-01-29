@@ -8,12 +8,14 @@ import com.gordonplumb.watchlist.models.exceptions.ForbiddenException;
 import com.gordonplumb.watchlist.models.exceptions.ResourceNotFoundException;
 import com.gordonplumb.watchlist.repositories.ListItemRepository;
 import com.gordonplumb.watchlist.repositories.WatchlistRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -64,12 +66,16 @@ public class ListService {
         return listItemRepository.findAllByWatchlistId(listId, pageable);
     }
 
-    public ListItem addListItem(long listId, String title, String[] tags, int runtime, boolean watched) {
+    public ListItem addListItem(long listId, int tmdbId, String title, String[] tags, int runtime, boolean watched) {
         Watchlist list = this.getList(listId);
         this.verifyUserIsAuthorized(list);
         String tagsCsv = this.convertTagArrayToString(tags);
-        ListItem listItem = new ListItem(list, title, tagsCsv, runtime, watched);
-        this.listItemRepository.save(listItem);
+        ListItem listItem = new ListItem(list, tmdbId, title, tagsCsv, runtime, watched);
+        try {
+            this.listItemRepository.save(listItem);
+        } catch (DataIntegrityViolationException ex) {
+            throw new BadRequestException("Data integrity exception");
+        }
 
         return listItem;
     }

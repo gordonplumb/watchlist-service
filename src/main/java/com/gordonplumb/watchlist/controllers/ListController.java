@@ -94,6 +94,7 @@ public class ListController {
     ) {
         ListItem listItem = this.service.addListItem(
             listId,
+            listItemValues.getTmdbId(),
             listItemValues.getTitle(),
             listItemValues.getTags(),
             listItemValues.getRuntime(),

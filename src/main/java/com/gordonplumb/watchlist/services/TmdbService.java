@@ -2,7 +2,7 @@ package com.gordonplumb.watchlist.services;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gordonplumb.watchlist.models.dtos.TmdbSearchResult;
+import com.gordonplumb.watchlist.models.dtos.*;
 import com.gordonplumb.watchlist.models.exceptions.BadRequestException;
 import com.gordonplumb.watchlist.models.exceptions.InternalServerException;
 import com.gordonplumb.watchlist.models.exceptions.TooManyRequestsException;
@@ -14,6 +14,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Arrays;
+import java.util.HashMap;
 
 @Service
 public class TmdbService {
@@ -50,6 +52,42 @@ public class TmdbService {
             .queryParam("page", pageNumber)
             .build()
             .toUri();
+
+        String body = sendRequest(uri);
+        try {
+            return objectMapper.readValue(body, TmdbSearchResult.class);
+        } catch (Exception ex) {
+            throw new InternalServerException("Unexpected error mapping API response");
+        }
+    }
+
+    public MovieDetailsDTO getDetails(int id) {
+        URI uri = UriComponentsBuilder
+            .fromUri(baseUri)
+            .pathSegment(String.format("movie/%s", id))
+            .queryParam("append_to_response", "credits")
+            .build()
+            .toUri();
+
+        String body = sendRequest(uri);
+        try {
+            MovieDetailsDTO details = objectMapper.readValue(body, MovieDetailsDTO.class);
+            CreditsDTO credits = details.getCredits();
+            CrewDTO[] crew = credits.getCrew();
+            HashMap<Integer, CrewDTO> crewMap = new HashMap<>();
+            for (int i = 0; i < crew.length && crewMap.size() < 10; i++) {
+                CrewDTO crewMember = crew[i];
+                crewMap.putIfAbsent(crewMember.getId(), crewMember);
+            }
+            credits.setCrew(crewMap.values().toArray(CrewDTO[]::new));
+            credits.setCast(Arrays.stream(credits.getCast(), 0, 10).toArray(CastDTO[]::new));
+            return details;
+        } catch (Exception ex) {
+            throw new InternalServerException("Unexpected error mapping API response");
+        }
+    }
+
+    private String sendRequest(URI uri) {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(uri)
             .header("Authorization", "Bearer " + token)
@@ -69,7 +107,7 @@ public class TmdbService {
 
         if (response.statusCode() == 200) {
             try {
-                return objectMapper.readValue(response.body(), TmdbSearchResult.class);
+                return response.body();
             } catch (Exception ex) {
                 throw new InternalServerException("Unexpected error mapping API response");
             }

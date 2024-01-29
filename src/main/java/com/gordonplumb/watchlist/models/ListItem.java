@@ -3,6 +3,7 @@ package com.gordonplumb.watchlist.models;
 import jakarta.persistence.*;
 
 @Entity
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UniqueListAndTmdbId", columnNames = { "watchlist_id", "tmdb_id" })})
 public class ListItem {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -10,7 +11,7 @@ public class ListItem {
     @ManyToOne
     @JoinColumn(name = "watchlist_id")
     private Watchlist watchlist;
-    private long tmdbId; // TODO: needed?
+    private int tmdbId;
     @Column(nullable = false)
     private String title;
     private String tags; // csv
@@ -19,8 +20,9 @@ public class ListItem {
 
     public ListItem() {}
 
-    public ListItem(Watchlist watchlist, String title, String tags, int runtime, boolean watched) {
+    public ListItem(Watchlist watchlist, int tmdbId, String title, String tags, int runtime, boolean watched) {
         this.watchlist = watchlist;
+        this.tmdbId = tmdbId;
         this.title = title;
         this.tags = tags;
         this.runtime = runtime;
@@ -43,11 +45,11 @@ public class ListItem {
         this.watchlist = watchlist;
     }
 
-    public long getTmdbId() {
+    public int getTmdbId() {
         return tmdbId;
     }
 
-    public void setTmdbId(long tmdbId) {
+    public void setTmdbId(int tmdbId) {
         this.tmdbId = tmdbId;
     }
 
