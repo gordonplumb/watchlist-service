@@ -69,17 +69,7 @@ public class TmdbService {
 
         String body = sendRequest(uri);
         try {
-            MovieDetailsDTO details = objectMapper.readValue(body, MovieDetailsDTO.class);
-            CreditsDTO credits = details.getCredits();
-            CrewDTO[] crew = credits.getCrew();
-            HashMap<Integer, CrewDTO> crewMap = new HashMap<>();
-            for (int i = 0; i < crew.length && crewMap.size() < 10; i++) {
-                CrewDTO crewMember = crew[i];
-                crewMap.putIfAbsent(crewMember.getId(), crewMember);
-            }
-            credits.setCrew(crewMap.values().toArray(CrewDTO[]::new));
-            credits.setCast(Arrays.stream(credits.getCast(), 0, 10).toArray(CastDTO[]::new));
-            return details;
+            return objectMapper.readValue(body, MovieDetailsDTO.class);
         } catch (Exception ex) {
             throw new InternalServerException("Unexpected error mapping API response");
         }
