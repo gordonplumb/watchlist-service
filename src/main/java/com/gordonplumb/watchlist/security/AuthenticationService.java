@@ -1,59 +1,74 @@
 package com.gordonplumb.watchlist.security;
 
-import com.gordonplumb.watchlist.security.models.AuthenticationRequest;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
+import com.gordonplumb.watchlist.exceptions.BadRequestException;
+import com.gordonplumb.watchlist.exceptions.ForbiddenException;
 import com.gordonplumb.watchlist.security.models.AuthenticationResponse;
-import com.gordonplumb.watchlist.security.models.RegisterRequest;
 import com.gordonplumb.watchlist.user.UserRepository;
 import com.gordonplumb.watchlist.user.User;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
 
 @Service
 public class AuthenticationService {
 
+    @Value("${google.clientId}")
+    private String CLIENT_ID;
+
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
 
     public AuthenticationService(
         UserRepository userRepository,
-        PasswordEncoder passwordEncoder,
-        JwtService jwtService,
-        AuthenticationManager authenticationManager
+        JwtService jwtService
     ) {
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
-        this.authenticationManager = authenticationManager;
     }
 
-    public AuthenticationResponse register(RegisterRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return AuthenticationResponseFactory.failure("An account already exists with this email");
+    public AuthenticationResponse authenticate(String idTokenString) {
+        if (idTokenString == null || !idTokenString.startsWith("Bearer")) {
+            throw new BadRequestException("Missing authorization header");
         }
-        User user = new User(
-            request.getName(),
-            request.getEmail(),
-            passwordEncoder.encode(request.getPassword())
-        );
-        User savedUser = userRepository.save(user);
-        String jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponseFactory.success(savedUser.getId(), savedUser.getName(), jwtToken);
-    }
+        NetHttpTransport httpTransport = new NetHttpTransport();
+        JsonFactory jsonFactory = new GsonFactory();
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(httpTransport, jsonFactory)
+            .setAudience(Collections.singletonList(CLIENT_ID))
+            .build();
+        GoogleIdToken idToken;
+        try {
+            idToken = verifier.verify(idTokenString.substring(7));
+        } catch (Exception e) {
+            throw new ForbiddenException("Authentication failed");
+        }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                request.getEmail(),
-                request.getPassword()
-            )
-        );
+        if (idToken != null) {
+            GoogleIdToken.Payload payload = idToken.getPayload();
 
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-        String jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponseFactory.success(user.getId(), user.getName(), jwtToken);
+            String userId = payload.getSubject();
+            String email = payload.getEmail();
+
+            if (userId != null) {
+                User user = userRepository.findById(userId).orElse(null);
+                if (user == null) {
+                    user = new User(
+                        userId,
+                        (String) payload.get("name"),
+                        email
+                    );
+                    userRepository.save(user);
+                }
+                String jwtToken = jwtService.generateToken(user);
+                return AuthenticationResponseFactory.success(user.getId(), user.getName(), jwtToken);
+            }
+        }
+
+        throw new ForbiddenException("Authentication failed");
     }
 }

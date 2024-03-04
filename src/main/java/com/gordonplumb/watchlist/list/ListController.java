@@ -32,7 +32,7 @@ public class ListController {
 
     @GetMapping("/user/{id}")
     public ResponseEntity<Page<ListDTO>> getUsersLists(
-        @PathVariable(value="id") long userId,
+        @PathVariable(value="id") String userId,
         @RequestParam(required = false) Integer pageNumber,
         @RequestParam(required = false) Integer pageSize
     ) {

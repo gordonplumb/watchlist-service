@@ -6,5 +6,5 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface WatchlistRepository extends JpaRepository<Watchlist, Long> {
-    Page<Watchlist> findAllByUserId(long id, Pageable pageable);
+    Page<Watchlist> findAllByUserId(String id, Pageable pageable);
 }

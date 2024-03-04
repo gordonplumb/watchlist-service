@@ -3,10 +3,10 @@ package com.gordonplumb.watchlist.list.models;
 public class ListDTO {
 
     private long id;
-    private long userId;
+    private String userId;
     private String name;
 
-    public ListDTO(long id, long userId, String name) {
+    public ListDTO(long id, String userId, String name) {
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -20,11 +20,11 @@ public class ListDTO {
         this.id = id;
     }
 
-    public long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
