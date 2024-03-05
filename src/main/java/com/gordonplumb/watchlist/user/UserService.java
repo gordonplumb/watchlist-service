@@ -14,7 +14,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User getUser(String id) {
+    public User getUser(long id) {
         return userRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));

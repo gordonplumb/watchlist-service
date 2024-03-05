@@ -13,7 +13,19 @@ import java.util.Set;
 @Entity
 public class User implements UserDetails {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long id;
+
+    public Set<Watchlist> getLists() {
+        return lists;
+    }
+
+    public void setLists(Set<Watchlist> lists) {
+        this.lists = lists;
+    }
+
+    @Column(nullable = false)
+    private String googleId;
 
     @Column(nullable = false)
     private String name;
@@ -25,18 +37,26 @@ public class User implements UserDetails {
 
     public User() {}
 
-    public User(String id, String name, String email) {
-        this.id = id;
+    public User(String googleId, String name, String email) {
+        this.googleId = googleId;
         this.name = name;
         this.email = email;
     }
 
-    public String getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(long id) {
         this.id = id;
+    }
+
+    public String getGoogleId() {
+        return googleId;
+    }
+
+    public void setGoogleId(String googleId) {
+        this.googleId = googleId;
     }
 
     public String getName() {

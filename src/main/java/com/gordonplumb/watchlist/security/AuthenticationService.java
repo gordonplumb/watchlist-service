@@ -55,7 +55,7 @@ public class AuthenticationService {
             String email = payload.getEmail();
 
             if (userId != null) {
-                User user = userRepository.findById(userId).orElse(null);
+                User user = userRepository.findByGoogleId(userId).orElse(null);
                 if (user == null) {
                     user = new User(
                         userId,

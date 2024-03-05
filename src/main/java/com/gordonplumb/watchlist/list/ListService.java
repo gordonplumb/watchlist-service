@@ -37,7 +37,7 @@ public class ListService {
             .orElseThrow(() -> new ResourceNotFoundException("List not found"));
     }
 
-    public Page<Watchlist> getUsersLists(String userId, int pageNumber, int pageSize) {
+    public Page<Watchlist> getUsersLists(long userId, int pageNumber, int pageSize) {
         return listRepository.findAllByUserId(
             userId,
             PageRequest.of(pageNumber, pageSize)
@@ -129,7 +129,7 @@ public class ListService {
 
     private void verifyUserIsAuthorized(Watchlist list) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!list.getUser().getId().equals(user.getId())) {
+        if (list.getUser().getId() != user.getId()) {
             throw new ForbiddenException("User not authorized");
         }
     }

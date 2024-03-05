@@ -2,7 +2,7 @@ package com.gordonplumb.watchlist.security.models;
 
 public class AuthenticationResponse {
     private String name;
-    private String id;
+    private long id;
     private String token;
 
     private String error;
@@ -11,7 +11,7 @@ public class AuthenticationResponse {
         this.error = error;
     }
 
-    public AuthenticationResponse(String id, String name, String token) {
+    public AuthenticationResponse(long id, String name, String token) {
         this.id = id;
         this.name = name;
         this.token = token;
@@ -41,11 +41,11 @@ public class AuthenticationResponse {
         this.name = name;
     }
 
-    public String getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(long id) {
         this.id = id;
     }
 }
