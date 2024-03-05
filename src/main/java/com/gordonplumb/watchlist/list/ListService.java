@@ -45,7 +45,7 @@ public class ListService {
     }
 
     public Watchlist createList(User user, String name) {
-        if (listRepository.findAllByUserId(user.getId(), PageRequest.of(0, 1)).isEmpty()) {
+        if (!listRepository.findAllByUserId(user.getId(), PageRequest.of(0, 1)).isEmpty()) {
             // remove if i decide to support multiple lists per user
             return null;
         }
