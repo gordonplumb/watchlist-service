@@ -1,0 +1,31 @@
+version: "3.7"
+
+name: watchlist-service
+
+services:
+  api:
+    build: .
+    ports:
+      - 8080:8080
+    networks:
+      - watchlist-net
+    depends_on:
+      - mysqldb
+
+  mysqldb:
+    image: "mysql:8.0"
+    restart: always
+    ports:
+      - 3306:3306
+    networks:
+      - watchlist-net
+    environment:
+      MY_SQL_DATABASE: main
+      MYSQL_USER: watchlist-service
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+networks:
+  watchlist-net:
+
+volumes:
+  mysql-data:
